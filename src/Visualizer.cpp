@@ -111,7 +111,7 @@ bool VisualizerApp::runLoop()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::ShowDemoWindow();
+    genUI();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -141,6 +141,9 @@ bool VisualizerApp::terminate()
     }
 
     m_scene.destroy();
+
+    if(m_frameGrabber)
+        m_frameGrabber->stop();
 
     glfwTerminate();
 
@@ -187,9 +190,80 @@ GLFWwindow* VisualizerApp::getWindowHandle()
     return m_window;
 }
 
+LIDARFrameGrabber* VisualizerApp::getLIDARFrameGrabber()
+{
+    return m_frameGrabber.get();
+}
+
 VisualizerApp& VisualizerApp::getInstance()
 {
     return *instance;
+}
+
+void VisualizerApp::genUI()
+{
+    static std::vector<std::string> devices = LIDARFrameGrabber::getAvailableDevices();
+
+    ImGui::SetNextWindowSize(ImVec2(350, 0));
+    
+    ImGui::Begin("Visualizer");
+    ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+
+    if (m_frameGrabber && m_frameGrabber->getFPS())
+        ImGui::Text("LIDAR FPS: %.1f", m_frameGrabber->getFPS());
+
+    ImGui::Text("Serial Port: %s", m_frameGrabber ? m_frameGrabber->getPort().c_str() : "None");
+
+    static int itemCurrentIdx = 0; // Here we store our selection data as an index.
+    const char* combo_preview_value = devices[itemCurrentIdx].c_str(); // Pass the preview value of our combo
+    if (ImGui::BeginCombo("Select Port", combo_preview_value))
+    {
+        for (int n = 0; n < devices.size(); n++)
+        {
+            const bool is_selected = (itemCurrentIdx == n);
+            if (ImGui::Selectable(devices[n].c_str(), is_selected))
+                itemCurrentIdx = n;
+
+            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    bool promptToDisconnect = m_frameGrabber && m_frameGrabber->getStatus() != LIDARFrameGrabber::IDLE;
+    if(ImGui::Button(promptToDisconnect ? "Disconnect" : "Connect")) {
+        if(promptToDisconnect)
+        {
+            m_frameGrabber->stop();
+            m_frameGrabber.reset();
+        }
+        else
+        {
+            m_frameGrabber = std::make_unique<LIDARFrameGrabber>(devices[itemCurrentIdx]);
+            m_frameGrabber->start();
+        }
+    }
+
+    ImGui::SameLine();
+
+    if(ImGui::Button("Reload Devices")) {
+        devices = LIDARFrameGrabber::getAvailableDevices();
+    }
+    
+    if(m_frameGrabber)
+    {
+        ImGui::Text("Status: %s", m_frameGrabber->getStatusMessage().c_str());
+
+        if(m_frameGrabber->getStatus() == LIDARFrameGrabber::Status::OK)
+        {
+            ImGui::Text("Serial Number: %s", m_frameGrabber->getSerialNumber().c_str());
+            ImGui::Text("Firmware Version: %s", m_frameGrabber->getFirmwareVersion().c_str());
+            ImGui::Text("Hardware Version: %s", m_frameGrabber->getHardwareVersion().c_str());
+        }
+    }
+
+    ImGui::End();
 }
 
 void VisualizerApp::onWindowResize(GLFWwindow* window, int width, int height)
