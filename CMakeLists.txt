@@ -46,6 +46,7 @@ set(PROJECT_INCLUDES
   dep/glm
   dep/imgui
   dep/imgui/backends
+  dep/rplidar_sdk/sdk/include
 )
 
 set(PROJECT_LIBRARIES
@@ -54,6 +55,7 @@ set(PROJECT_LIBRARIES
   glm
   lua
   imgui
+  rplidar_sdk
 )
 
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
