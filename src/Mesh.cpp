@@ -1,8 +1,5 @@
 #include "Mesh.hpp"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <stb_image.h>
 #include <filesystem>
 
@@ -16,109 +13,6 @@ Logger m_logger("Meshes");
 std::vector<std::shared_ptr<Mesh>> Mesh::load(const char* filePath)
 {
     std::vector<std::shared_ptr<Mesh>> meshes;
-    fs::path directory = fs::path(filePath).parent_path();
-    fs::path fileName = fs::path(filePath).stem();
-
-    Assimp::Importer importer;
-
-    const aiScene* scene = importer.ReadFile(filePath, aiProcess_Triangulate);
-
-    if(!scene)
-    {
-        m_logger.errorf("Cannot load \"%s\"", filePath);
-        return meshes;
-    }
-
-    for(unsigned int i = 0; i < scene->mNumMeshes; i++)
-    {
-        std::shared_ptr<Mesh> emmesh = std::make_shared<Mesh>();
-        meshes.push_back(emmesh);
-        const aiMesh* mesh = scene->mMeshes[i];
-
-        if(mesh->mName.length) emmesh->m_name = mesh->mName.data;
-        else emmesh->m_name = fileName.u8string();
-
-        m_logger.infof("Loading mesh \"%s\"", emmesh->m_name.c_str());
-        
-        emmesh->m_numVerticies = mesh->mNumVertices;
-
-        // Get Position data
-        for(unsigned int j = 0; j < mesh->mNumVertices; j++)
-        {
-            aiVector3D pos = mesh->mVertices[j];
-            emmesh->m_positions.emplace_back(pos.x , pos.y, pos.z);
-        }
-
-        // Get UV data
-        if(mesh->mTextureCoords[0])
-            for(unsigned int j = 0; j < mesh->mNumVertices; j++)
-            {
-                aiVector3D uv = mesh->mTextureCoords[0][j];
-                emmesh->m_uvs.emplace_back(uv.x, uv.y);
-            }
-
-        // Get Normal data
-        for(unsigned int j = 0; j < mesh->mNumVertices; j++)
-        {
-            aiVector3D norm = mesh->mNormals[j];
-            emmesh->m_normals.emplace_back(norm.x, norm.y, norm.z);
-        }
-
-        // Get Color data
-        if(mesh->mColors[0])
-            for(unsigned int j = 0; j < mesh->mNumVertices; j++)
-            {
-                aiColor4D color = mesh->mColors[0][j];
-                emmesh->m_colors.emplace_back(color.r, color.g, color.b, color.a);
-            }
-
-        // Get Index data
-        emmesh->m_numIndicies = mesh->mNumFaces * 3;
-        for(unsigned int j = 0; j < mesh->mNumFaces; j++)
-        {
-            uint32_t* faceIndicies = mesh->mFaces[j].mIndices;
-            emmesh->m_indicies.emplace_back(faceIndicies[0]);
-            emmesh->m_indicies.emplace_back(faceIndicies[1]);
-            emmesh->m_indicies.emplace_back(faceIndicies[2]);
-        }
-
-        // Get texture (if any)
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        stbi_uc* image = NULL;
-        int width, height, channels;
-        if(material && aiGetMaterialTextureCount(material, aiTextureType_DIFFUSE))
-        {
-            aiString textureName;
-            aiGetMaterialTexture(material, aiTextureType_DIFFUSE, 0, &textureName);
-            std::string texturePath = (directory / fs::path(textureName.data)).u8string();
-
-            stbi_set_flip_vertically_on_load(true);
-            image = stbi_load(texturePath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-
-            if(!image)
-            {
-                m_logger.submodule(emmesh->getName()).errorf("Failed to load texture \"%s\"", texturePath.c_str());
-                return meshes;
-            }
-        }
-
-        if(image)
-        {
-            glGenTextures(1, &emmesh->m_glTexture);
-            glBindTexture(GL_TEXTURE_2D, emmesh->m_glTexture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-            stbi_image_free(image);
-        }
-
-        emmesh->m_positions.shrink_to_fit();
-        emmesh->m_uvs.shrink_to_fit();
-        emmesh->m_normals.shrink_to_fit();
-        emmesh->m_colors.shrink_to_fit();
-    }
 
     return meshes;
 }
