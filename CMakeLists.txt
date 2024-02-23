@@ -26,6 +26,8 @@ set(PROJECT_SOURCES
   src/LightObject.cpp
   src/Framebuffer.cpp
   src/LuaIndexable.cpp
+  src/LIDARFramePreview.cpp
+  src/LIDARFrameGrabber.cpp
 
   src/shaders/Shader.cpp
   src/shaders/PhongShader.cpp
