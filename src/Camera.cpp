@@ -47,7 +47,7 @@ const glm::mat4 Camera::getProjectionMatrix() const
     else
     {
         float halfSize = orthographicSize / 2.0f;
-        float aspectRatio = fovMode == VERTICAL ? windowSize.x / windowSize.y : windowSize.y / windowSize.x;
+        float aspectRatio = fovMode == HORIZONTAL ? windowSize.x / windowSize.y : windowSize.y / windowSize.x;
         float xSize = fovMode == HORIZONTAL ? halfSize : halfSize / aspectRatio;
         float ySize = fovMode == VERTICAL ? halfSize : halfSize / aspectRatio;
         projectionMatrix = glm::ortho(-xSize, xSize, -ySize, ySize, nearPlane, farPlane);
