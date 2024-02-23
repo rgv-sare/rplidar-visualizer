@@ -9,6 +9,7 @@ add_subdirectory("dep/glad")
 add_subdirectory("dep/glm")
 add_subdirectory("dep/lua")
 add_subdirectory("dep/googletest")
+add_subdirectory("dep/imgui")
 
 set(PROJECT_SOURCES
   src/main.cpp
@@ -41,6 +42,8 @@ set(PROJECT_INCLUDES
   dep/glfw/include
   dep/glad/include
   dep/glm
+  dep/imgui
+  dep/imgui/backends
 )
 
 set(PROJECT_LIBRARIES
@@ -48,6 +51,7 @@ set(PROJECT_LIBRARIES
   glad
   glm
   lua
+  imgui
 )
 
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})

@@ -1,5 +1,9 @@
 #include <Visualizer.hpp>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 using namespace em;
 
 static VisualizerApp* instance = nullptr;
@@ -65,6 +69,17 @@ bool VisualizerApp::start(AppParams& options)
     // Setup scene
     m_scene.init();
 
+    // Setup ImGui
+    // Setup Dear imgui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void) io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+    ImGui_ImplOpenGL3_Init("#version 130");
+
     m_initialized = true;
 
     return true;
@@ -90,6 +105,16 @@ bool VisualizerApp::runLoop()
     m_input->update();
 
     m_scene.draw();
+
+    // ImGui
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::ShowDemoWindow();
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(m_window);
     glfwPollEvents();
