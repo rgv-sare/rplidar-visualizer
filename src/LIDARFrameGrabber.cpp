@@ -226,9 +226,10 @@ void LIDARFrameGrabber::workerThread(LIDARFrameGrabber* grabber)
     grabber->m_status = OK;
     logger.infof("LIDAR frame grabber started");
 
-    driver->startScan(false, true);
+    // driver->startScan(false, true);
     while(!grabber->m_shouldStop)
     {
+        driver->startScan(false, true);
         double time = glfwGetTime();
         captureFrame(*grabber, driver);
         grabber->m_fps = 1.0f / (glfwGetTime() - time);
