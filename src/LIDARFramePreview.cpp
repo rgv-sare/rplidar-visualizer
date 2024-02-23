@@ -1,6 +1,7 @@
 #include "LIDARFramePreview.hpp"
 
 #include "GLInclude.hpp"
+#include "Visualizer.hpp"
 
 LIDARFramePreview::LIDARFramePreview(const std::string& name) :
     SceneObject(LIDAR_FRAME_PREVIEW, name),
@@ -20,14 +21,30 @@ void LIDARFramePreview::draw(Shader& shader)
 {   
     m_meshBuilder->reset();
 
-    for (int i = 0; i <= 50; i++) {
-        float angle = glm::radians((360.0f / 50) * i);
-        float x = cos(angle);
-        float y = sin(angle);
-        // Calculate x, y coordinates of a unit circle for each iteration
-        // ...
+    LIDARFrameGrabber* grabber =  VisualizerApp::getInstance().getLIDARFrameGrabber();
+
+    if(!grabber || !grabber->isConnected())
+        return;
+
+    const std::vector<LIDARFrameGrabber::Node>& nodes = grabber->getNodes();
+    LIDARFrameGrabber::Node longestNode = grabber->longestNode();
+
+    m_meshBuilder->index(1, 0);
+    m_meshBuilder->vertex(NULL, 0.0f, 0.0f, 0.0f, 0.0, 0.0, 0.0f, 0.5f, 0.0f, 1.0f);
+
+    for(const LIDARFrameGrabber::Node& node : nodes)
+    {
+        if (node.distance < 5.0f)
+            continue;
+
+        float x = node.distance * cos(glm::radians(node.angle));
+        float y = node.distance * sin(glm::radians(node.angle));
+
+        x = x / longestNode.distance;
+        y = y / longestNode.distance;
+
         m_meshBuilder->index(1, 0);
-        m_meshBuilder->vertex(NULL, x, y, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+        m_meshBuilder->vertex(NULL, x, y, 0.0f, 0.0, 0.0, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     shader.setModelViewMatrix(getTransform().getMatrix());
@@ -40,6 +57,7 @@ void LIDARFramePreview::draw(Shader& shader)
     glPointSize(3.0f);
     shader.setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     shader.use();
+    shader.setVertexColorEnabled(true);
     m_meshBuilder->drawElements(GL_POINTS);
 }
 
