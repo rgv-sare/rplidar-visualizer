@@ -102,7 +102,7 @@ void VisualizerScene::init()
     auto windowSize = VisualizerApp::getInstance().getWindowSize();
     framebuffer.init(windowSize.x, windowSize.y);
 
-    phongShader.init();
+    shader.init();
 
     compositor.init();
 
@@ -147,23 +147,17 @@ void VisualizerScene::update(float dt)
     mainCamera->doUpdate(dt);
 }
 
-void VisualizerScene::draw()
+void VisualizerScene::draw() 
 {
     glm::ivec2 windowSize = VisualizerApp::getInstance().getWindowSize();
     glViewport(0, 0, windowSize.x, windowSize.y);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    phongShader.setProjectionMatrix(mainCamera->getViewProjectionMatrix());
-    phongShader.setCameraPos(mainCamera->getTransform().position);
-    phongShader.setLightCount(lights.size());
+    shader.setProjectionMatrix(mainCamera->getViewProjectionMatrix());
     lightIndex = 0;
 
     framebuffer.clear();
-    phongShader.use();
-
-    for(auto& light : lights)
-        if(light.second->isTopLevel())
-            drawObject(light.second.get(), glm::mat4(1.0f));
+    shader.use();
 
     for(auto& object : objects)
         if(object.second->isTopLevel())
@@ -178,7 +172,7 @@ void VisualizerScene::destroy()
 {
     framebuffer.destroy();
 
-    phongShader.destroy();
+    shader.destroy();
 
     compositor.destroy();
 
@@ -217,16 +211,8 @@ void VisualizerScene::drawObject(SceneObject* object, glm::mat4 modelView)
     {
         MeshObject* meshObject = static_cast<MeshObject*>(object);
 
-        phongShader.setModelViewMatrix(modelView);
-        meshObject->draw(phongShader);
-    }
-    else if(object->getType() == SceneObject::LIGHT && lightIndex < MAX_LIGHTS)
-    {
-        LightObject* lightObject = static_cast<LightObject*>(object);
-        glm::vec4 lightPos = modelView * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-        phongShader.getLight(lightIndex).position = lightPos;
-        phongShader.getLight(lightIndex++).setLight(lightObject->getColor(), lightObject->getIntensity());
+        shader.setModelViewMatrix(modelView);
+        meshObject->draw(shader);
     }
 
     for(auto& child : object->getChildren())

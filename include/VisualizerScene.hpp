@@ -29,7 +29,7 @@ namespace em
     private:
         std::unique_ptr<Camera> mainCamera;
         Framebuffer framebuffer;
-        PhongShader phongShader;
+        Shader shader;
         Compositor compositor;
         Logger logger;
 
