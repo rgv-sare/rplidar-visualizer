@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <LuaInclude.hpp>
+#include <LIDARFramePreview.hpp>
 
 namespace em
 {
@@ -32,6 +33,7 @@ namespace em
         Shader shader;
         Compositor compositor;
         Logger logger;
+        std::unique_ptr<LIDARFramePreview> lidarPreviewer;
 
         lua_State* L;
 

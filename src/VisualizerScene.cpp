@@ -110,6 +110,8 @@ void VisualizerScene::init()
     mainCamera->setName("main-camera");
     mainCamera->getTransform().position.z = -2.0f;
 
+    lidarPreviewer = std::make_unique<LIDARFramePreview>("lidar-preview");
+
     initLua();
     initFromLua();
 
@@ -138,6 +140,8 @@ void VisualizerScene::update(float dt)
     rotateCamera(*mainCamera, dt);
     updateFromLua(dt);
 
+    lidarPreviewer->doUpdate(dt);
+
     for(auto&lights : lights)
         lights.second->doUpdate(dt);
 
@@ -152,12 +156,15 @@ void VisualizerScene::draw()
     glm::ivec2 windowSize = VisualizerApp::getInstance().getWindowSize();
     glViewport(0, 0, windowSize.x, windowSize.y);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
 
     shader.setProjectionMatrix(mainCamera->getViewProjectionMatrix());
     lightIndex = 0;
 
     framebuffer.clear();
     shader.use();
+
+    lidarPreviewer->draw(shader);
 
     for(auto& object : objects)
         if(object.second->isTopLevel())
