@@ -6,6 +6,7 @@
 #include <Input.hpp>
 #include <glm/glm.hpp>
 #include <VisualizerScene.hpp>
+#include <LIDARFrameGrabber.hpp>
 
 #include <memory>
 #include <inttypes.h>
@@ -39,6 +40,7 @@ namespace em {
         AppParams getParams();
         const Input& getInput();
         GLFWwindow* getWindowHandle();
+        LIDARFrameGrabber* getLIDARFrameGrabber();
 
         static VisualizerApp& getInstance();
     private:
@@ -53,6 +55,10 @@ namespace em {
         glm::ivec2 m_windowSize;
 
         VisualizerScene m_scene;
+
+        std::unique_ptr<LIDARFrameGrabber> m_frameGrabber;
+
+        void genUI();
 
         static void onWindowResize(GLFWwindow* window, int width, int height);
     };
