@@ -1,8 +1,9 @@
 -- Called upon scene starting up
 function Start()
-  scene.camera.transform:setPosition({0, 0, -1})
-  scene.camera:setProjectionMode("ORTHOGRAPHIC")
-  scene.camera:setOrthographicSize(2)
+  scene.camera.transform:setPosition({0, 0, -5})
+  scene.camera.transform:setRotationEuler({0, 0, 0})
+  scene.camera:setProjectionMode("PERSPECTIVE")
+  scene.camera:setFieldOfView(25)
 end
 
 -- Called upon every frame
