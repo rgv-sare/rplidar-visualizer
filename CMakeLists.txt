@@ -9,7 +9,7 @@ add_subdirectory("dep/glad")
 add_subdirectory("dep/glm")
 add_subdirectory("dep/lua")
 add_subdirectory("dep/googletest")
-add_subdirectory("dep/imgui")
+add_subdirectory("dep")
 
 set(PROJECT_SOURCES
   src/main.cpp
