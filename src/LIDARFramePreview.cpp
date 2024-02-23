@@ -3,7 +3,7 @@
 #include "GLInclude.hpp"
 
 LIDARFramePreview::LIDARFramePreview(const std::string& name) :
-    SceneObject(FRAME_GRABBER, name),
+    SceneObject(LIDAR_FRAME_PREVIEW, name),
     var(0)
 {
     VertexFormat vtxFmt;
@@ -37,7 +37,7 @@ void LIDARFramePreview::draw(Shader& shader)
     shader.use();
     m_meshBuilder->drawElements(GL_LINE_STRIP);
 
-    glPointSize(2.0f);
+    glPointSize(3.0f);
     shader.setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     shader.use();
     m_meshBuilder->drawElements(GL_POINTS);

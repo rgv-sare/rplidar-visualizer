@@ -97,7 +97,8 @@ namespace em
             MESH,
             LIGHT,
             CAMERA,
-            ROOT
+            ROOT,
+            LIDAR_FRAME_PREVIEW,
         };
 
         static const char* typeNames[];
